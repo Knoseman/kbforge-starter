@@ -1,0 +1,23 @@
+domains:
+  - acme-api
+  - ops
+
+kinds:
+  - reference
+  - known-issue
+  - process
+
+statuses:
+  - current
+  - outdated
+  - provisional
+
+owners:
+  - ai
+  - user
+
+topics:
+  - authentication
+  - endpoints
+  - bug
+  - workflow

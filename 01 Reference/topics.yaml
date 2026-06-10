@@ -1,0 +1,100 @@
+# Controlled vocabulary for 01 Reference articles.
+# All values used in article frontmatter (domain, kind, status, owner, topics)
+# MUST exist in this file. Add new terms here first.
+#
+# HOW TO CUSTOMIZE:
+# 1. Replace example domains with your product/service areas
+# 2. Add your own topics — keep them lowercase and hyphenated
+# 3. Run build_catalog.py after editing to regenerate indexes
+
+domains:
+  - acme-api          # example: replace with your API or product domain
+  - integrations      # example: third-party integration guides
+  - ops               # example: operational procedures and contacts
+  - ai-practices      # example: AI tooling and KB maintenance practices
+
+kinds:
+  - reference        # factual article
+  - troubleshooting  # diagnostic / fix guide
+  - known-issue      # documented bug or gap; requires review_due
+  - comparison       # A vs B evaluation
+  - process          # step-by-step operational procedure
+  - contacts         # people / escalation paths
+  - aggregate        # auto-generated; do not edit by hand
+
+statuses:
+  - current
+  - outdated
+  - superseded
+  - provisional      # requires review_due
+
+owners:
+  - ai               # AI-generated; ask before editing
+  - user             # human-authored; do not modify
+
+topics:
+  # Auth / API fundamentals
+  - authentication
+  - api-token
+  - api-key
+  - oauth
+  - endpoints
+  - rate-limiting
+  - idempotency
+  - tls
+  - credentials
+  - http-basic-auth
+
+  # Lifecycle / Transactions
+  - lifecycle
+  - requests
+  - responses
+  - errors
+  - result-codes
+  - schemas
+  - data-types
+  - webhooks
+  - async
+  - callbacks
+
+  # Testing / Environments
+  - test-environments
+  - sandbox
+  - production
+  - testing
+  - uat
+  - self-assessment
+  - integration-verification
+
+  # Onboarding / Operations
+  - onboarding
+  - partner-integration
+  - account-setup
+  - contacts
+  - escalation
+  - internal
+  - workflow
+
+  # Known issues / Troubleshooting
+  - known-issue
+  - troubleshooting
+  - workaround
+  - bug
+
+  # Concepts / Architecture
+  - overview
+  - concepts
+  - architecture
+  - comparison
+  - decision
+  - integration-approach
+
+  # AI Practices
+  - ai-development
+  - agents
+  - skills
+  - knowledge-base
+  - catalog
+  - ingestion
+  - gap-detection
+  - provenance

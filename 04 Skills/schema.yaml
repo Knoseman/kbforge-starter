@@ -1,0 +1,68 @@
+# Controlled vocabulary for 04 Skills.
+# All values used in skill frontmatter (kind, ratings, etc.)
+# MUST exist in this file. Add new terms here first.
+
+kinds:
+  - lookup       # read-only retrieval from the KB
+  - capture      # record new info into the KB (issues, sources, articles)
+  - transform    # produce an artifact from existing KB content (drafts, checklists)
+  - report       # analyze and summarize across the KB
+  - meta         # operate on the system itself (rebuild, verify, route)
+
+ratings:
+  - "success"    # ✅ skill completed its purpose
+  - "partial"    # ⚠️ skill ran but result is incomplete or uncertain
+  - "failed"     # ❌ skill could not complete; gap or error logged
+
+# Audiences (used by transform skills like draft-response)
+audiences:
+  - partner
+  - internal
+
+# Known input types
+input_types:
+  - question
+  - issue
+  - raw_source
+  - transcript
+  - context
+
+# Known output types
+output_types:
+  - answer
+  - sources
+  - rating
+  - issue_note
+  - draft_message
+  - uat_checklist
+  - gaps_report
+  - article
+  - log_entry
+
+# Section headings (fixed order in skill bodies)
+required_sections:
+  - "When"
+  - "Inputs"
+  - "Procedure"
+  - "Output"
+  - "Hand-off"
+  - "Rating"
+
+# Frontmatter fields (required vs optional)
+frontmatter:
+  required:
+    - id
+    - title
+    - kind
+    - triggers
+    - summary
+  optional:
+    - inputs
+    - outputs
+    - chains_to
+    - chains_from
+    - collapsed_from  # [skill-id, ...] — which skills this collapsed skill replaces
+    - fast_path       # true | false — include in PRIME.md fast-path table
+    - touches         # {reads: [...], writes: [...]}
+    - success_rate    # "unrated" or a percentage; manually updated
+    - notes

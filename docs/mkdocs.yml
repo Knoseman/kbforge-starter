@@ -1,0 +1,73 @@
+site_name: KBForge Docs
+site_description: "An AI-ready knowledge base starter kit for technical teams."
+site_url: https://knoseman.github.io/kbforge-starter/
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - tables
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Knoseman/kbforge-starter
+
+copyright: "Copyright &copy; 2026 KBForge. MIT License."
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - Quick Start: quickstart.md
+      - Full Setup: setup.md
+  - Concepts:
+      - What is KBForge?: concepts/what-is-kbforge.md
+      - Grep-first vs RAG: concepts/grep-first-vs-rag.md
+      - The Catalog: concepts/catalog.md
+      - Frontmatter Schema: concepts/frontmatter.md
+      - Skills: concepts/skills.md
+      - Folder Structure: concepts/folders.md
+  - How-to Guides:
+      - Ingest a Source: guides/ingest.md
+      - Answer a Question: guides/answer.md
+      - Rebuild the Catalog: guides/rebuild-catalog.md
+      - Add a New Skill: guides/add-skill.md
+  - Reference:
+      - Scripts: reference/scripts.md
+      - Free Skills: reference/free-skills.md
+      - Pro Skills: reference/pro-skills.md
+  - Pro Tier: pro.md

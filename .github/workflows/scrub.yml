@@ -1,0 +1,67 @@
+name: Scrub check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+
+  gitleaks:
+    name: Detect secrets (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  denylist:
+    name: Domain-specific denylist grep
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for prohibited terms
+        run: |
+          # Add domain-specific terms to this list before making the repo public.
+          # Each term is a case-insensitive grep pattern.
+          TERMS=(
+            # Add your confidential company/product names here, e.g.:
+            # "mycompany"
+            # "internal-product-name"
+          )
+
+          FOUND=0
+          for term in "${TERMS[@]}"; do
+            matches=$(grep -rin "$term" \
+              --include="*.md" --include="*.yaml" --include="*.json" --include="*.py" \
+              --exclude-dir=".git" --exclude-dir="planning" \
+              . 2>/dev/null || true)
+            if [ -n "$matches" ]; then
+              echo "❌ Found prohibited term '$term':"
+              echo "$matches"
+              FOUND=1
+            fi
+          done
+
+          if [ $FOUND -eq 1 ]; then
+            echo ""
+            echo "Scrub failed — remove the above matches before pushing."
+            exit 1
+          else
+            echo "✓ No prohibited terms found."
+          fi

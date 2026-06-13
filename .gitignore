@@ -11,6 +11,9 @@
 # Pro pack — distributed separately, not part of the free public repo
 pro-pack/
 
+# Internal project plans and sensitive local notes
+06 Internal/
+
 # Python
 __pycache__/
 *.py[cod]

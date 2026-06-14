@@ -18,7 +18,7 @@ class TestKBForgeBlueprint(unittest.TestCase):
         
         # Clone blueprint structure (simplified for testing)
         # In a real CI, you'd clone the repo. Here we copy the current state.
-        shutil.copytree(PROJECT_ROOT, self.test_workspace, ignore=shutil.ignore_patterns('tmp_test_vault', 'build_tests', '.git', '.obsidian'))
+        shutil.copytree(PROJECT_ROOT, self.test_workspace, ignore=shutil.ignore_patterns('tmp_test_vault', 'tests', '.git', '.obsidian'))
 
     def tearDown(self):
         if self.test_workspace.exists():

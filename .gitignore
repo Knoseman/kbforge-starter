@@ -26,6 +26,8 @@ docs/site/
 MEMORY.md
 
 # Build tool tests
-build_tests/
-!build_tests/*.py
-!build_tests/fixtures/
+tests/
+!tests/*.py
+!tests/fixtures/
+tests/__pycache__/
+tests/tmp_test_vault/

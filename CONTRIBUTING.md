@@ -23,9 +23,16 @@ Advanced skills (draft-response, kb-gaps, lint, uat-prep, etc.) are part of the 
 1. **Fork** the repo and create a branch from `master`.
 2. **Make your change.** Keep it focused — one fix or improvement per PR.
 3. **Test your change** by running `init.py` on a fresh clone to confirm setup still works end-to-end.
-4. If you edited a skill, run `python3 "04 Skills/scripts/build_skills_index.py"` and commit the updated `skills.jsonl`.
-5. If you added or changed articles, run `python3 "01 Reference/scripts/build_catalog.py"` and commit the updated `catalog.jsonl`.
-6. **Open a pull request** with a clear description of what changed and why.
+4. **Validate with the test suite**: Run `python -m unittest discover tests` to ensure your changes didn't break core blueprint functionality or introduce restricted terms.
+5. If you edited a skill, run `python3 "04 Skills/scripts/build_skills_index.py"` and commit the updated `skills.jsonl`.
+6. If you added or changed articles, run `python3 "01 Reference/scripts/build_catalog.py"` and commit the updated `catalog.jsonl`.
+7. **Open a pull request** with a clear description of what changed and why.
+
+---
+
+## Testing infrastructure
+
+We include a test suite in `tests/` to help you verify that your knowledge base maintains its architectural integrity. If you add new skills or modify the `init.py` logic, running these tests will confirm your changes haven't broken the core automation.
 
 ---
 

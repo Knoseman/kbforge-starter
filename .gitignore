@@ -25,5 +25,7 @@ docs/site/
 # Personal Project Memory
 MEMORY.md
 
-# Build tool tests (not part of the blueprint)
+# Build tool tests
 build_tests/
+!build_tests/*.py
+!build_tests/fixtures/

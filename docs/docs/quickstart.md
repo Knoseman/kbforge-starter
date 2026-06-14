@@ -54,7 +54,7 @@ Just open the folder. It's plain Markdown — no special setup needed.
 
 ## Step 3 — Add your first article (5 min)
 
-Open `01 Reference/articles/<your-domain>.overview.md` (created by `init.py`).
+Open `01 Reference/articles/welcome.md`.
 
 Fill in:
 

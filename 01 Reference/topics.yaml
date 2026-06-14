@@ -8,10 +8,7 @@
 # 3. Run build_catalog.py after editing to regenerate indexes
 
 domains:
-  - acme-api          # example: replace with your API or product domain
-  - integrations      # example: third-party integration guides
-  - ops               # example: operational procedures and contacts
-  - ai-practices      # example: AI tooling and KB maintenance practices
+  - example-domain    # example: replace with your API or product domain
 
 kinds:
   - reference        # factual article

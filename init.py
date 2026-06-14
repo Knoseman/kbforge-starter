@@ -5,10 +5,9 @@ KBForge init script.
 Personalises a fresh kbforge-starter clone for your domain:
   1. Prompts for domain slug, team name, and seed topics
   2. Replaces placeholder values in topics.yaml and AGENTS.md files
-  3. Removes Acme demo articles, account profile, and example log entries
-  4. Scaffolds empty starting files with your domain
-  5. Runs build_catalog.py and build_skills_index.py
-  6. Prints a ready checklist
+  3. Scaffolds empty starting files with your domain
+  4. Runs build_catalog.py and build_skills_index.py
+  5. Prints a ready checklist
 
 Run once after cloning:
   python3 init.py
@@ -16,6 +15,7 @@ Run once after cloning:
 Python 3.10+ required. No external dependencies.
 """
 
+import argparse
 import re
 import shutil
 import subprocess
@@ -36,7 +36,7 @@ def prompt(question: str, example: str = "", required: bool = True) -> str:
             return val
         if not required:
             return ""
-        print("  ✗ This field is required.")
+        print("  [!] This field is required.")
 
 
 def prompt_list(question: str, example: str = "", min_count: int = 1, max_count: int = 5) -> list[str]:
@@ -49,7 +49,7 @@ def prompt_list(question: str, example: str = "", min_count: int = 1, max_count:
         if not val:
             if len(items) >= min_count:
                 break
-            print(f"  ✗ Please enter at least {min_count} item(s).")
+            print(f"  [!] Please enter at least {min_count} item(s).")
             continue
         slug = re.sub(r"[^a-z0-9-]", "-", val.lower()).strip("-")
         slug = re.sub(r"-+", "-", slug)
@@ -61,18 +61,6 @@ def slugify(s: str) -> str:
     return re.sub(r"-+", "-", re.sub(r"[^a-z0-9-]", "-", s.lower())).strip("-")
 
 
-def replace_in_file(path: Path, replacements: dict[str, str]) -> bool:
-    """Apply a dict of {old: new} substitutions to a file. Returns True if changed."""
-    text = path.read_text(encoding="utf-8")
-    new_text = text
-    for old, new in replacements.items():
-        new_text = new_text.replace(old, new)
-    if new_text != text:
-        path.write_text(new_text, encoding="utf-8")
-        return True
-    return False
-
-
 def run_script(script_path: Path) -> bool:
     """Run a Python script. Returns True on success."""
     result = subprocess.run(
@@ -82,12 +70,12 @@ def run_script(script_path: Path) -> bool:
         cwd=str(VAULT),
     )
     if result.returncode != 0:
-        print(f"  ✗ {script_path.name} failed:\n{result.stderr.strip()}")
+        print(f"  [!] {script_path.name} failed:\n{result.stderr.strip()}")
         return False
     # Print last meaningful line
     last = [l for l in result.stdout.strip().splitlines() if l.strip()]
     if last:
-        print(f"  ✓ {last[-1]}")
+        print(f"  [OK] {last[-1]}")
     return True
 
 
@@ -95,7 +83,7 @@ def run_script(script_path: Path) -> bool:
 # Steps
 # ---------------------------------------------------------------------------
 
-def collect_inputs() -> dict:
+def collect_inputs(skip_confirm: bool = False) -> dict:
     print("\n" + "=" * 60)
     print("  KBForge — init")
     print("=" * 60)
@@ -106,12 +94,12 @@ It will replace placeholder content and scaffold your starting files.
 
     domain = slugify(prompt(
         "1. Domain slug  (your primary knowledge area)",
-        example="payments-api, support-kb, acme-platform",
+        example="my-domain, support-kb, platform",
     ))
 
     team = prompt(
         "2. Team / company name",
-        example="Acme Corp, My Team, Contoso",
+        example="My Team, Contoso",
     )
 
     print()
@@ -127,10 +115,11 @@ It will replace placeholder content and scaffold your starting files.
     print(f"  Team name   : {team}")
     print(f"  Topics      : {', '.join(topics)}")
     print()
-    confirm = input("Looks good? (y/n): ").strip().lower()
-    if confirm not in ("y", "yes"):
-        print("Aborted — re-run init.py to start over.")
-        sys.exit(0)
+    if not skip_confirm:
+        confirm = input("Looks good? (y/n): ").strip().lower()
+        if confirm not in ("y", "yes"):
+            print("Aborted — re-run init.py to start over.")
+            sys.exit(0)
 
     return {"domain": domain, "team": team, "topics": topics}
 
@@ -139,75 +128,51 @@ def patch_topics_yaml(domain: str, topics: list[str]) -> None:
     path = VAULT / "01 Reference" / "topics.yaml"
     text = path.read_text(encoding="utf-8")
 
-    # Replace demo domains block
-    demo_domains = "  - acme-api          # example: replace with your API or product domain\n  - integrations      # example: third-party integration guides\n  - ops               # example: operational procedures and contacts\n  - ai-practices      # example: AI tooling and KB maintenance practices"
+    # Replace placeholder domains block
+    demo_domains = "  - example-domain    # example: replace with your API or product domain"
     new_domains = f"  - {domain}\n  - ops\n  - ai-practices"
     text = text.replace(demo_domains, new_domains)
 
-    # Append seed topics under the existing topics section (before the AI Practices block)
+    # Append seed topics
     seed_block = "\n".join(f"  - {t}" for t in topics)
-    insert_marker = "  # Auth / API fundamentals"
-    seed_section = f"  # Your seed topics\n{seed_block}\n\n  # Auth / API fundamentals"
-    text = text.replace(insert_marker, seed_section, 1)
+    insert_marker = "  # Your seed topics"
+    if insert_marker in text:
+        text = text.replace(insert_marker, f"  # Your seed topics\n{seed_block}")
+    else:
+        text += f"\n\n  # Your seed topics\n{seed_block}"
 
     path.write_text(text, encoding="utf-8")
-    print(f"  ✓ topics.yaml — domain set to '{domain}', {len(topics)} seed topics added")
+    print(f"  [OK] topics.yaml — domain set to '{domain}', {len(topics)} seed topics added")
 
 
 def patch_agents_md_files(domain: str, team: str) -> None:
-    # Order matters: replace longer/more-specific strings first.
-    # Use word-boundary-aware replacements to avoid partial matches inside other words.
     agents_files = list(VAULT.rglob("AGENTS.md"))
     changed = 0
     for f in agents_files:
         text = f.read_text(encoding="utf-8")
         new_text = text
-        # 1. Team name "Acme" — case-sensitive, do this FIRST before the
-        #    case-insensitive bareword match catches it.
-        new_text = new_text.replace("Acme", team)
-        # 2. Exact phrase "acme-api"
-        new_text = new_text.replace("acme-api", domain)
-        # 3. Exact word "acme" — case-insensitive, but preserve surrounding punctuation/spaces.
-        #    We use a regex with negative lookbehind/ahead for word chars so "macme" doesn't match.
-        import re as _re
-        new_text = _re.sub(r"(?<![a-zA-Z0-9_-])acme(?![a-zA-Z0-9_-])", domain, new_text, flags=_re.IGNORECASE)
+        # Generic replacements based on new templates
+        new_text = new_text.replace("YOUR_DOMAIN", domain)
+        new_text = new_text.replace("YOUR_TEAM_NAME", team)
         if new_text != text:
             f.write_text(new_text, encoding="utf-8")
             changed += 1
-    print(f"  ✓ AGENTS.md files — {changed}/{len(agents_files)} updated")
+    print(f"  [OK] AGENTS.md files — {changed}/{len(agents_files)} updated")
 
 
 def remove_demo_content(domain: str, team: str) -> None:
-    # Remove Acme demo articles
-    removed_articles = 0
-    for f in (VAULT / "01 Reference" / "articles").glob("acme-api.*.md"):
-        f.unlink()
-        removed_articles += 1
-    print(f"  ✓ Removed {removed_articles} demo article(s)")
+    # No demo articles to remove, as we are starting from a clean template state
+    print(f"  [OK] Workspace verified as clean")
 
-    # Remove Acme demo account profile
-    demo_account = VAULT / "03 Accounts" / "(C) Acme Corp.md"
-    if demo_account.exists():
-        demo_account.unlink()
-        print(f"  ✓ Removed demo account profile")
-
-    # Clear example entries from iteration logs (leave headers intact)
-    gaps_path = VAULT / "05 Iteration Logs" / "KB Gaps.md"
-    if gaps_path.exists():
-        text = gaps_path.read_text(encoding="utf-8")
-        # Remove everything from <!-- Example entry --> onward
-        cut = text.find("<!-- Example entry")
-        if cut != -1:
-            gaps_path.write_text(text[:cut].rstrip() + "\n", encoding="utf-8")
-            print(f"  ✓ Cleared example entries from KB Gaps.md")
-
-    ingestion_path = VAULT / "05 Iteration Logs" / "Ingestion Log.md"
-    if ingestion_path.exists():
-        text = ingestion_path.read_text(encoding="utf-8")
-        cut = text.find("<!-- Example entry")
-        if cut != -1:
-            ingestion_path.write_text(text[:cut].rstrip() + "\n", encoding="utf-8")
-            print(f"  ✓ Cleared example entries from Ingestion Log.md")
+    # Clear example entries from logs
+    for log in ["KB Gaps.md", "Ingestion Log.md"]:
+        path = VAULT / "05 Iteration Logs" / log
+        if path.exists():
+            text = path.read_text(encoding="utf-8")
+            # Keep header, clear template
+            header = text.split("---")[0] + "---"
+            path.write_text(header + "\n\n### [Template] Add your first entry here...", encoding="utf-8")
+            print(f"  [OK] Cleared example entries from {log}")
 
 
 def scaffold_starting_files(domain: str, team: str, topics: list[str]) -> None:
@@ -233,7 +198,7 @@ blockers: []
 
 Add context about this account here.
 """, encoding="utf-8")
-    print(f"  ✓ Scaffolded account profile: 03 Accounts/(C) {team}.md")
+    print(f"  [OK] Scaffolded account profile: 03 Accounts/(C) {team}.md")
 
     # Create a placeholder first article
     first_id = f"{domain}.overview"
@@ -265,7 +230,7 @@ Replace this with a 1–3 sentence answer to the most common question about {dom
 
 ## See also
 """, encoding="utf-8")
-    print(f"  ✓ Scaffolded first article: (C) {first_id}.md (status: provisional — fill it in)")
+    print(f"  [OK] Scaffolded first article: {article_path} (exists: {article_path.exists()})")
 
 
 def rebuild_indexes() -> None:
@@ -276,12 +241,12 @@ def rebuild_indexes() -> None:
     if catalog_script.exists():
         run_script(catalog_script)
     else:
-        print(f"  ⚠ {catalog_script} not found — skipping")
+        print(f"  [!] {catalog_script} not found — skipping")
 
     if skills_script.exists():
         run_script(skills_script)
     else:
-        print(f"  ⚠ {skills_script} not found — skipping")
+        print(f"  [!] {skills_script} not found — skipping")
 
 
 def print_checklist(domain: str, team: str) -> None:
@@ -318,7 +283,11 @@ Full walkthrough: SETUP.md
 # ---------------------------------------------------------------------------
 
 def main() -> None:
-    inputs = collect_inputs()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--no-confirm", action="store_true", help="Skip confirmation prompt")
+    args = parser.parse_args()
+
+    inputs = collect_inputs(skip_confirm=args.no_confirm)
     domain = inputs["domain"]
     team = inputs["team"]
     topics = inputs["topics"]

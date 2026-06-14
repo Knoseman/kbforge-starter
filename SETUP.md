@@ -45,16 +45,15 @@ Right-click `init.ps1` in the folder and select **"Run with PowerShell"**.
 
 The script will prompt you for:
 
-1. **Your domain slug** — a short, lowercase, hyphenated identifier for your primary knowledge area (e.g. `payments-api`, `acme-platform`, `support-kb`). This becomes the default domain in your first articles.
-2. **Your team or company name** — used in AGENTS.md and demo content (e.g. `Acme Corp`, `My Team`).
+1. **Your domain slug** — a short, lowercase, hyphenated identifier for your primary knowledge area (e.g. `payments-api`, `my-platform`, `support-kb`). This becomes the default domain in your first articles.
+2. **Your team or company name** — used in AGENTS.md and demo content (e.g. `My Team`, `Contoso`).
 3. **3–5 seed topics** — the key concepts you'll write articles about (e.g. `authentication`, `webhooks`, `onboarding`). You can add more later in `01 Reference/topics.yaml`.
 
 After you answer, `init.py` will:
 
 * Replace all placeholder values across `topics.yaml` and `AGENTS.md` files
-* Remove the Acme demo articles and account profile
 * Scaffold empty starting files with your domain
-* Run `build\\\_catalog.py` and `build\\\_skills\\\_index.py` to generate fresh indexes
+* Run `build_catalog.py` and `build_skills_index.py` to generate fresh indexes
 * Print a checklist of what to do next
 
 \---

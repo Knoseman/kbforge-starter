@@ -49,8 +49,8 @@ Write-Host "`n" + "=" * 60 -ForegroundColor Cyan
 Write-Host "  KBForge — init" -ForegroundColor Cyan
 Write-Host "=" * 60 -ForegroundColor Cyan
 
-$domain = Slugify (Prompt-User -question "1. Domain slug (your primary knowledge area)" -example "payments-api, support-kb, acme-platform")
-$team = Prompt-User -question "2. Team / company name" -example "Acme Corp, My Team, Contoso"
+$domain = Slugify (Prompt-User -question "1. Domain slug (your primary knowledge area)" -example "my-domain")
+$team = Prompt-User -question "2. Team / company name" -example "My Team"
 $topics = Prompt-List -question "3. Seed topics (key concepts you'll document)" -example "authentication, webhooks, onboarding" -minCount 3 -maxCount 5
 
 Write-Host "`n  Domain slug : $domain"
@@ -68,41 +68,31 @@ Write-Host "`nApplying changes...`n" -ForegroundColor Cyan
 # 1. Patch topics.yaml
 $topicsPath = Join-Path $vault "01 Reference/topics.yaml"
 $topicsContent = Get-Content $topicsPath -Encoding utf8
-$demoDomains = "  - acme-api          # example: replace with your API or product domain`n  - integrations      # example: third-party integration guides`n  - ops               # example: operational procedures and contacts`n  - ai-practices      # example: AI tooling and KB maintenance practices"
+$demoDomains = "  - example-domain    # example: replace with your API or product domain"
 $newDomains = "  - $domain`n  - ops`n  - ai-practices"
 $topicsContent = $topicsContent.Replace($demoDomains, $newDomains)
 $seedBlock = ($topics | ForEach-Object { "  - $_" }) -join "`n"
-$topicsContent = $topicsContent.Replace("  # Auth / API fundamentals", "  # Your seed topics`n$seedBlock`n`n  # Auth / API fundamentals")
+$topicsContent = $topicsContent.Replace("  # Your seed topics", "  # Your seed topics`n$seedBlock")
 $topicsContent | Set-Content $topicsPath -Encoding utf8
 Write-Host "  ✓ topics.yaml — domain set to '$domain', $($topics.Count) seed topics added" -ForegroundColor Green
 
 # 2. Patch AGENTS.md files
 Get-ChildItem -Path $vault -Recurse -Filter "AGENTS.md" | ForEach-Object {
     $content = Get-Content $_.FullName -Encoding utf8 -Raw
-    # Order matters: team name first (case-sensitive), then domain replacements.
-    $content = $content.Replace("Acme", $team)
-    $content = $content.Replace("acme-api", $domain)
-    # Replace bare word "acme" case-insensitively, but only whole-word matches.
-    $content = [regex]::Replace($content, '(?<![a-zA-Z0-9_-])acme(?![a-zA-Z0-9_-])', $domain, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+    $content = $content.Replace("YOUR_DOMAIN", $domain)
+    $content = $content.Replace("YOUR_TEAM_NAME", $team)
     $content | Set-Content $_.FullName -Encoding utf8
 }
 Write-Host "  ✓ AGENTS.md files updated" -ForegroundColor Green
 
-# 3. Remove demo content
-Remove-Item (Join-Path $vault "01 Reference/articles/acme-api.*") -ErrorAction SilentlyContinue
-Remove-Item (Join-Path $vault "03 Accounts/(C) Acme Corp.md") -ErrorAction SilentlyContinue
-Write-Host "  ✓ Removed demo articles and account" -ForegroundColor Green
-
-# Clean up logs
+# 3. Clean up logs
 foreach ($log in @("05 Iteration Logs/KB Gaps.md", "05 Iteration Logs/Ingestion Log.md")) {
     $path = Join-Path $vault $log
     if (Test-Path $path) {
         $text = Get-Content $path -Encoding utf8 -Raw
-        $cut = $text.IndexOf("<!-- Example entry")
-        if ($cut -ne -1) {
-            $text.Substring(0, $cut).TrimEnd() + "`n" | Set-Content $path -Encoding utf8
-            Write-Host "  ✓ Cleared example entries from $log" -ForegroundColor Green
-        }
+        $header = $text.Split("---")[0] + "---"
+        $header + "`n`n### [Template] Add your first entry here..." | Set-Content $path -Encoding utf8
+        Write-Host "  ✓ Cleared example entries from $log" -ForegroundColor Green
     }
 }
 
@@ -169,7 +159,7 @@ foreach ($script in @("01 Reference/scripts/build_catalog.py", "04 Skills/script
     if (Test-Path $path) {
         python $path | ForEach-Object { Write-Host "  ✓ $_" -ForegroundColor Green }
     } else {
-        Write-Host "  ⚠ $script not found — skipping" -ForegroundColor Yellow
+        Write-Host "  ⚠ $script not found — skipping"
     }
 }
 

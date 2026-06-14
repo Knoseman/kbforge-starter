@@ -21,3 +21,9 @@ __pycache__/
 .venv/
 # Docs
 docs/site/
+
+# Personal Project Memory
+MEMORY.md
+
+# Build tool tests (not part of the blueprint)
+build_tests/
